@@ -69,3 +69,32 @@ const TodoInput = ({hideTodoInput}: Props) => {
   );
 };
 ```
+
+## Chapter 7 - 위치 정보와 API 사용법
+
+- fetch 함수와 API를 이용해 위치 정보를 가져온다
+
+```
+Geolocation.getCurrentPosition(
+  position => {
+    const { latitude, longitude } = position.coords;
+    fetch(
+      `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&APPID=${API_KEY}&units=metric`
+    )
+    .then(response => response.json())
+    .then(json => {
+      setWeatherInfo({
+        temperature: json.main.temp,
+        weather: json.weather[0].main,
+        isLoading: true,
+      });
+     })
+    .catch(error => {
+      setWeatherInfo({
+        isLoading: true,
+      });
+      showError('날씨 정보를 가져오는데 실패하였습니다.');
+    });
+  },
+)
+```
