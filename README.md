@@ -98,3 +98,97 @@ Geolocation.getCurrentPosition(
   },
 )
 ```
+
+## Chapter 8 - 영화소개 앱 - 네비게이션과 앱 리소스
+
+- Stack Navigator를 사용하기 위해 객체를 생성한다.
+
+```
+const Stack = createStackNavigator();
+```
+
+- 네이게이터 안에 들어갈 스크린을 정의해준다.
+
+```
+const LoginNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Login"
+        component={Login}
+        options={{
+          title: 'MOVIEAPP',
+          headerTransparent: true,
+          headerTintColor: '#E70915',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+```
+
+- ContextAPI를 이용해 사용자 정보(로그인 정보)가 있는 확인한다.
+- 사용자 정보가 있을경우(->로그인이 돼있는 경우) MovieHome으로 이동한다. 그렇지 않을 경우, Login으로 이동한다.
+- 네비게이터를 네비게이션 컨테이너로 감싸서 내보낸다.
+
+```
+const {isLoading, userInfo} = useContext<IUserContext>(UserContext);
+
+return (
+  <NavigationContainer>
+    {userInfo ? <MovieNavigator/> : <LoginNavigator/>}
+  </NavigationContainer>
+);
+```
+
+- useLayoutEffect()의 경우 렌더링 후 업데이트 되기 전 동기적으로 실행된다. 반면, useEffect()는 렌더링 되고 화면이 그려진 후 비동기적으로 실행된다. => 실행시점의 차이
+
+- 로그인이 자동으로 이뤄진 경우 useEffect() 함수를 이용해 splash 이미지를 종료해준다.
+
+```
+useLayoutEffect(() => {
+  navigation.setOptions({
+    headerRight: () => (
+      <StyleButton
+        onPress={() => {
+          logout();
+        }}>
+        <Icon source={require('~/Assets/Images/ic_logout.png')} />
+      </StyleButton>
+    ),
+  });
+}, []);
+
+useEffect(() => {
+  SplashScreen.hide();
+}, []);
+```
+
+- 하위 컴포넌트에 함수를 넘겨줄 때, navigate() 함수와 선택한 영화의 id값을 이용하여 화면을 전환해준다.
+
+```
+<BigCatalogList
+  url="https://yts.lt/api/v2/list_movies.json?sort_by=like_count&order_by=desc&limit=5"
+  onPress={(id: number) => {
+    navigation.navigate('MovieDetail', {
+      id,
+    });
+  }}
+/>
+```
+
+- useEffect()와 fetch()를 이용해 영화정보를 가져온 뒤, 유효한 정보일 경우 setData()를 이용해 state를 변경해준다.
+
+```
+useEffect(() => {
+  fetch(url).then((response) => response.json()).then((json) => {
+    console.log(json);
+    setData(json.data.movies);
+  }).catch((error) => {
+    console.log(error);
+  });
+},[]);
+```
